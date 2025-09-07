@@ -1,0 +1,34 @@
+@import url('animation.css');
+
+:root{
+    --primary_color1:rgb(230, 230, 230);
+    --primary_color2:rgb(255, 249, 249);
+    --primary_color_glass:rgba(255, 255, 255, 0.704);
+    --secondary_color:rgb(0, 0, 0);
+    --accent_color:#1d4ed8;
+    --hyperlink:rgb(249, 45, 208);
+    --error_color:#b62433;
+    --error_bg:#f8d7da;
+    --success_bg:rgb(179, 255, 179);
+    --success_color:rgb(1, 100, 1);
+    --background-color:rgb(250, 239, 175);
+    --accent_color_glass:rgba(255, 217, 0, 0.587);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--background-color);
+    color: var(--secondary_color);
+}
+.copyright {
+    text-align: center;
+    font-size: 0.9em;
+    color: var(--secondary_color);
+    margin-top: 20px;
+}
+.copyright span {
+    color: var(--success_color);;
+}

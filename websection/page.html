@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulated Timetable</title>
+    <style>
+        :root {
+            /* Primary Colors */
+            --color-indigo-700: #4338ca;
+            --color-indigo-500: #6366f1;
+            --color-blue-600: #2563eb;
+            --color-blue-700: #1d4ed8;
+            --color-blue-500: #3b82f6;
+            --color-blue-400: #60a5fa;
+            --color-blue-300: #93c5fd;
+            --color-blue-50: #eff6ff;
+            --color-blue-200: #bfdbfe;
+            --color-red-600: #dc2626;
+            --color-red-700: #b91c1c;
+            --color-red-500: #ef4444;
+            --color-green-600: #16a34a;
+            --color-green-900: #14532d;
+            --color-green-500: #22c55e;
+
+            /* Neutral Colors */
+            --color-gray-900: #111827;
+            --color-gray-800: #1f2937;
+            --color-gray-700: #374151;
+            --color-gray-600: #4b5563;
+            --color-gray-500: #6b7280;
+            --color-gray-400: #9ca3af;
+            --color-gray-300: #d1d5db;
+            --color-gray-200: #e5e7eb;
+            --color-gray-100: #f3f4f6;
+            --color-gray-50: #f9fafb;
+            --color-white: #ffffff;
+        }
+
+        /* General styles */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background-color: var(--color-gray-50);
+            color: var(--color-gray-700);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 960px;
+            margin: 20px;
+            padding: 20px;
+            background-color: var(--color-white);
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--color-gray-200);
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-gray-900);
+            margin: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            color: var(--color-gray-500);
+            font-size: 0.875rem;
+        }
+
+        .user-info .user-icon {
+            margin-right: 8px;
+        }
+
+        /* Navigation */
+        .navigation {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .nav-btn {
+            background-color: var(--color-gray-100);
+            color: var(--color-gray-700);
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.2s, box-shadow 0.2s, color 0.2s;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--color-gray-200);
+        }
+
+        .nav-btn.active {
+            background-color: var(--color-indigo-700);
+            color: var(--color-white);
+        }
+
+        /* Section styles */
+        .section {
+            display: none;
+        }
+
+        .section.active-section {
+            display: block;
+        }
+
+        /* Timetable specific styles */
+        .day-selection {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 600px) {
+            .day-selection {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-width: 900px) {
+            .day-selection {
+                grid-template-columns: repeat(8, 1fr);
+            }
+        }
+
+        .day-btn {
+            background-color: var(--color-blue-50);
+            color: var(--color-blue-700);
+            border: 1px solid var(--color-blue-200);
+            padding: 10px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .day-btn:hover {
+            background-color: var(--color-blue-100);
+            border-color: var(--color-blue-300);
+        }
+
+        .day-btn.active {
+            background-color: var(--color-blue-600);
+            color: var(--color-white);
+            border-color: var(--color-blue-600);
+        }
+
+        .add-period-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        @media (min-width: 600px) {
+            .add-period-form {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .add-period-form input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--color-gray-300);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            color: var(--color-gray-700);
+            transition: border-color 0.2s;
+        }
+
+        .add-period-form input:focus {
+            outline: none;
+            border-color: var(--color-blue-500);
+        }
+
+        .add-period-form .time-inputs {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-period-form .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--color-indigo-500);
+            color: var(--color-white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-indigo-700);
+        }
+        
+        .btn-cancel {
+            background-color: var(--color-gray-200);
+            color: var(--color-gray-700);
+        }
+
+        .btn-cancel:hover {
+            background-color: var(--color-gray-300);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        .timetable-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+
+        .timetable-table thead tr {
+            background-color: var(--color-gray-100);
+            border-bottom: 1px solid var(--color-gray-200);
+            color: var(--color-gray-600);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .timetable-table th, .timetable-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--color-gray-200);
+            white-space: nowrap;
+        }
+
+        .timetable-table tbody tr {
+            transition: background-color 0.2s;
+        }
+        
+        .timetable-table tbody tr.editing-row, .timetable-table tbody tr:hover {
+            background-color: var(--color-gray-50);
+        }
+
+        .timetable-table tbody tr.deactivated-row {
+            background-color: var(--color-gray-50);
+            color: var(--color-gray-400);
+        }
+
+        .timetable-table .status-indicator {
+            height: 12px;
+            width: 12px;
+            background-color: var(--color-green-500);
+            border-radius: 9999px;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+            transition: background-color 0.2s;
+        }
+
+        .timetable-table .deactivated-row .status-indicator {
+            background-color: var(--color-gray-400);
+        }
+
+        .timetable-table .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .timetable-table .action-btn {
+            background-color: transparent;
+            border: none;
+            color: var(--color-gray-500);
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .timetable-table .action-btn:hover {
+            color: var(--color-gray-700);
+        }
+
+        .timetable-table .action-btn.edit-btn:hover {
+            color: var(--color-blue-500);
+        }
+
+        .timetable-table .action-btn.delete-btn:hover {
+            color: var(--color-red-500);
+        }
+
+        /* Input switch styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--color-gray-200);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--color-green-600);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--color-green-600);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Settings section styles */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 600px) {
+            .settings-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .settings-card {
+            background-color: var(--color-gray-50);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--color-gray-200);
+        }
+
+        .settings-card h3 {
+            margin: 0 0 16px 0;
+            font-size: 1.125rem;
+            color: var(--color-gray-800);
+        }
+
+        /* Manual section styles */
+        .manual-content {
+            padding: 16px;
+            background-color: var(--color-gray-50);
+            border-radius: 8px;
+            border: 1px solid var(--color-gray-200);
+        }
+        
+        .manual-content h2 {
+            margin-top: 0;
+        }
+        
+        .manual-list {
+            list-style-type: disc;
+            padding-left: 20px;
+            margin: 0;
+        }
+
+        .manual-list li {
+            margin-bottom: 8px;
+        }
+
+        /* Custom Modal styles */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none; /* Initially hidden */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .custom-modal-content {
+            background-color: var(--color-white);
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .custom-modal-content h3 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            color: var(--color-gray-900);
+        }
+
+        .custom-modal-content p {
+            margin: 8px 0 24px 0;
+            color: var(--color-gray-600);
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-danger {
+            background-color: var(--color-red-600);
+            color: var(--color-white);
+        }
+        
+        .btn-danger:hover {
+            background-color: var(--color-red-700);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <h1>Timetable</h1>
+            </div>
+            <div class="user-info">
+                <span class="user-icon">👤</span>
+                <span id="user-email-placeholder">Simulated User</span>
+            </div>
+        </header>
+
+        <nav class="navigation">
+            <button id="navTimetableBtn" class="nav-btn active">Timetable</button>
+            <button id="navManualBtn" class="nav-btn">Manual</button>
+            <button id="navSettingsBtn" class="nav-btn">Settings</button>
+        </nav>
+
+        <!-- Timetable Section -->
+        <section id="timetableSection" class="section active-section">
+            <div class="day-selection" id="day-selection">
+                <!-- Day buttons will be rendered here by JavaScript -->
+            </div>
+
+            <div class="add-period-form">
+                <input type="text" id="periodNameInput" placeholder="Enter period name" />
+                <div class="time-inputs">
+                    <input type="time" id="startTimeInput" />
+                    <input type="time" id="endTimeInput" />
+                </div>
+                <div class="form-actions">
+                    <button id="addPeriodBtn" class="btn btn-primary">Add Period</button>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="timetable-table">
+                    <thead>
+                        <tr>
+                            <th>Period Name</th>
+                            <th>Day</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Active</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timetable-body">
+                        <!-- Timetable rows will be rendered here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Manual Section -->
+        <section id="manualSection" class="section hidden-section">
+            <div class="manual-content">
+                <h2>User Manual</h2>
+                <p>Welcome to your real-time timetable! This manual will guide you through the features.</p>
+                <ul class="manual-list">
+                    <li><b>Add a Period:</b> Enter the name, start time, and end time in the form at the top and click "Add Period."</li>
+                    <li><b>Edit a Period:</b> Click the pencil icon next to a period. The row will become editable. Click the save icon to commit changes.</li>
+                    <li><b>Delete a Period:</b> Click the trash can icon to remove a period. A confirmation pop-up will appear.</li>
+                    <li><b>Activate/Deactivate:</b> Use the toggle switch to set a period as active or inactive. Inactive periods are grayed out.</li>
+                    <li><b>Day Filter:</b> Use the buttons at the top to filter the timetable by day of the week.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settingsSection" class="section hidden-section">
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3>Theme</h3>
+                    <p>Change the appearance of the application.</p>
+                    <div class="flex gap-2">
+                        <button class="btn btn-primary">Light Mode</button>
+                        <button class="btn btn-primary" disabled>Dark Mode (Coming Soon)</button>
+                    </div>
+                </div>
+                <div class="settings-card">
+                    <h3>Notifications</h3>
+                    <p>Enable or disable notifications for upcoming periods.</p>
+                    <label class="switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Custom Modal for Confirmation -->
+    <div id="custom-modal-overlay" class="custom-modal-overlay">
+        <div class="custom-modal-content">
+            <h3 id="modal-title">Confirm Action</h3>
+            <p id="modal-message">Are you sure you want to perform this action?</p>
+            <div class="modal-buttons">
+                <button id="modal-cancel-btn" class="btn btn-cancel">Cancel</button>
+                <button id="modal-confirm-btn" class="btn btn-danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        let periods = [];
+        let selectedDay = 'All Days';
+
+        // DOM element references
+        const navTimetableBtn = document.getElementById('navTimetableBtn');
+        const navManualBtn = document.getElementById('navManualBtn');
+        const navSettingsBtn = document.getElementById('navSettingsBtn');
+        const timetableSection = document.getElementById('timetableSection');
+        const manualSection = document.getElementById('manualSection');
+        const settingsSection = document.getElementById('settingsSection');
+        const userEmailPlaceholder = document.getElementById('user-email-placeholder');
+        const daySelection = document.getElementById('day-selection');
+        const timetableBody = document.getElementById('timetable-body');
+        const periodNameInput = document.getElementById('periodNameInput');
+        const startTimeInput = document.getElementById('startTimeInput');
+        const endTimeInput = document.getElementById('endTimeInput');
+        const addPeriodBtn = document.getElementById('addPeriodBtn');
+        const customModalOverlay = document.getElementById('custom-modal-overlay');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+
+        // Function to show a custom modal (replaces alert/confirm)
+        const showCustomModal = (title, message) => {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModalOverlay.style.display = 'flex';
+
+                const handleConfirm = () => {
+                    customModalOverlay.style.display = 'none';
+                    resolve(true);
+                };
+
+                const handleCancel = () => {
+                    customModalOverlay.style.display = 'none';
+                    resolve(false);
+                };
+
+                modalConfirmBtn.onclick = handleConfirm;
+                modalCancelBtn.onclick = handleCancel;
+            });
+        };
+
+        // CRUD Operations using localStorage
+        const savePeriodsToLocal = () => {
+            localStorage.setItem('periods', JSON.stringify(periods));
+        };
+
+        const loadPeriodsFromLocal = () => {
+            const storedPeriods = localStorage.getItem('periods');
+            periods = storedPeriods ? JSON.parse(storedPeriods) : [];
+        };
+
+        const addPeriod = (name, day, startTime, endTime, isActive) => {
+            const newPeriod = {
+                id: crypto.randomUUID(),
+                name,
+                day,
+                startTime,
+                endTime,
+                isActive,
+                createdAt: new Date().toISOString()
+            };
+            periods.push(newPeriod);
+            savePeriodsToLocal();
+            periodNameInput.value = '';
+            startTimeInput.value = '';
+            endTimeInput.value = '';
+            renderTimetable();
+        };
+
+        const updatePeriod = (id, updatedData) => {
+            const index = periods.findIndex(p => p.id === id);
+            if (index !== -1) {
+                periods[index] = { ...periods[index], ...updatedData };
+                savePeriodsToLocal();
+                renderTimetable();
+            }
+        };
+
+        const deletePeriod = async (id) => {
+            const confirmed = await showCustomModal(
+                "Delete Period",
+                "Are you sure you want to delete this period?"
+            );
+
+            if (confirmed) {
+                periods = periods.filter(p => p.id !== id);
+                savePeriodsToLocal();
+                renderTimetable();
+            }
+        };
+
+        // UI Rendering Functions
+        const renderTimetable = () => {
+            // Sort data by startTime
+            const sortedData = periods.sort((a, b) => a.startTime.localeCompare(b.startTime));
+            
+            timetableBody.innerHTML = '';
+            const filteredPeriods = selectedDay === 'All Days'
+                ? sortedData
+                : sortedData.filter(p => p.day === selectedDay);
+
+            if (filteredPeriods.length === 0) {
+                const row = timetableBody.insertRow();
+                const cell = row.insertCell(0);
+                cell.colSpan = 6;
+                cell.textContent = "No periods found for this day.";
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                return;
+            }
+
+            filteredPeriods.forEach(period => {
+                const row = timetableBody.insertRow();
+                row.classList.toggle('deactivated-row', !period.isActive);
+                row.dataset.id = period.id;
+
+                const nameCell = row.insertCell(0);
+                nameCell.textContent = period.name;
+                
+                const dayCell = row.insertCell(1);
+                dayCell.textContent = period.day;
+
+                const startTimeCell = row.insertCell(2);
+                startTimeCell.textContent = period.startTime;
+
+                const endTimeCell = row.insertCell(3);
+                endTimeCell.textContent = period.endTime;
+
+                const statusCell = row.insertCell(4);
+                const switchLabel = document.createElement('label');
+                switchLabel.className = 'switch';
+                const switchInput = document.createElement('input');
+                switchInput.type = 'checkbox';
+                switchInput.checked = period.isActive;
+                switchInput.onchange = () => updatePeriod(period.id, { isActive: switchInput.checked });
+                const sliderSpan = document.createElement('span');
+                sliderSpan.className = 'slider';
+                switchLabel.appendChild(switchInput);
+                switchLabel.appendChild(sliderSpan);
+                statusCell.appendChild(switchLabel);
+
+                const actionsCell = row.insertCell(5);
+                actionsCell.className = 'actions';
+
+                // Edit button
+                const editBtn = document.createElement('button');
+                editBtn.className = 'action-btn edit-btn';
+                editBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                `;
+                editBtn.onclick = () => enableEditing(row, period);
+                actionsCell.appendChild(editBtn);
+
+                // Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'action-btn delete-btn';
+                deleteBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                `;
+                deleteBtn.onclick = () => deletePeriod(period.id);
+                actionsCell.appendChild(deleteBtn);
+            });
+        };
+
+        const enableEditing = (row, period) => {
+            row.classList.add('editing-row');
+            const cells = row.cells;
+            const originalDay = period.day;
+
+            // Name input
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.value = period.name;
+            nameInput.style.cssText = 'width: 100%; padding: 4px; border: 1px solid var(--color-gray-300); border-radius: 4px;';
+            cells[0].innerHTML = '';
+            cells[0].appendChild(nameInput);
+
+            // Day dropdown
+            const daySelect = document.createElement('select');
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            days.forEach(day => {
+                const option = document.createElement('option');
+                option.value = day;
+                option.textContent = day;
+                if (day === originalDay) option.selected = true;
+                daySelect.appendChild(option);
+            });
+            daySelect.style.cssText = 'width: 100%; padding: 4px; border: 1px solid var(--color-gray-300); border-radius: 4px;';
+            cells[1].innerHTML = '';
+            cells[1].appendChild(daySelect);
+
+            // Start Time input
+            const startTimeInput = document.createElement('input');
+            startTimeInput.type = 'time';
+            startTimeInput.value = period.startTime;
+            startTimeInput.style.cssText = 'width: 100%; padding: 4px; border: 1px solid var(--color-gray-300); border-radius: 4px;';
+            cells[2].innerHTML = '';
+            cells[2].appendChild(startTimeInput);
+
+            // End Time input
+            const endTimeInput = document.createElement('input');
+            endTimeInput.type = 'time';
+            endTimeInput.value = period.endTime;
+            endTimeInput.style.cssText = 'width: 100%; padding: 4px; border: 1px solid var(--color-gray-300); border-radius: 4px;';
+            cells[3].innerHTML = '';
+            cells[3].appendChild(endTimeInput);
+
+            // Action buttons
+            const actionsCell = cells[5];
+            actionsCell.innerHTML = '';
+
+            // Save button
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'action-btn';
+            saveBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+            `;
+            saveBtn.onclick = () => {
+                updatePeriod(period.id, {
+                    name: nameInput.value,
+                    day: daySelect.value,
+                    startTime: startTimeInput.value,
+                    endTime: endTimeInput.value
+                });
+                row.classList.remove('editing-row');
+            };
+            actionsCell.appendChild(saveBtn);
+            
+            // Cancel button
+            const cancelBtn = document.createElement('button');
+            cancelBtn.className = 'action-btn';
+            cancelBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" width="20" height="20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+            `;
+            cancelBtn.onclick = () => {
+                row.classList.remove('editing-row');
+                renderTimetable(); // Re-render the table to show original values
+            };
+            actionsCell.appendChild(cancelBtn);
+        };
+
+        const renderDaySelectionButtons = () => {
+            const days = ['All Days', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            daySelection.innerHTML = '';
+            days.forEach(day => {
+                const btn = document.createElement('button');
+                btn.className = 'day-btn';
+                btn.textContent = day;
+                if (day === selectedDay) {
+                    btn.classList.add('active');
+                }
+                btn.onclick = () => {
+                    document.querySelectorAll('.day-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedDay = day;
+                    renderTimetable();
+                };
+                daySelection.appendChild(btn);
+            });
+        };
+
+        // Section Toggling Logic
+        const showSection = (sectionId) => {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active-section');
+                section.classList.add('hidden-section');
+            });
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            if (sectionId === 'timetableSection') {
+                timetableSection.classList.remove('hidden-section');
+                timetableSection.classList.add('active-section');
+                navTimetableBtn.classList.add('active');
+            } else if (sectionId === 'manualSection') {
+                manualSection.classList.remove('hidden-section');
+                manualSection.classList.add('active-section');
+                navManualBtn.classList.add('active');
+            } else if (sectionId === 'settingsSection') {
+                settingsSection.classList.remove('hidden-section');
+                settingsSection.classList.add('active-section');
+                navSettingsBtn.classList.add('active');
+            }
+        };
+
+        // Event listeners
+        navTimetableBtn.onclick = () => showSection('timetableSection');
+        navManualBtn.onclick = () => showSection('manualSection');
+        navSettingsBtn.onclick = () => showSection('settingsSection');
+
+        addPeriodBtn.onclick = () => {
+            const name = periodNameInput.value;
+            const startTime = startTimeInput.value;
+            const endTime = endTimeInput.value;
+            const day = selectedDay === 'All Days' ? 'Monday' : selectedDay;
+            if (name && startTime && endTime) {
+                addPeriod(name, day, startTime, endTime, true);
+            } else {
+                 showCustomModal("Error", "Please fill in all fields.");
+            }
+        };
+
+        // Initial setup when the window loads
+        window.onload = async () => {
+            // Check if there are no periods stored, then add defaults.
+            if (!localStorage.getItem('periods') || JSON.parse(localStorage.getItem('periods')).length === 0) {
+                const defaultPeriods = [
+                    { id: crypto.randomUUID(), name: 'Math Class', day: 'Monday', startTime: '09:00', endTime: '10:00', isActive: true, createdAt: new Date().toISOString() },
+                    { id: crypto.randomUUID(), name: 'Lunch Break', day: 'Monday', startTime: '12:00', endTime: '13:00', isActive: true, createdAt: new Date().toISOString() },
+                    { id: crypto.randomUUID(), name: 'Science Lab', day: 'Tuesday', startTime: '14:00', endTime: '16:00', isActive: true, createdAt: new Date().toISOString() },
+                    { id: crypto.randomUUID(), name: 'History Lecture', day: 'Wednesday', startTime: '10:30', endTime: '12:00', isActive: true, createdAt: new Date().toISOString() },
+                    { id: crypto.randomUUID(), name: 'Gym', day: 'Friday', startTime: '15:00', endTime: '16:00', isActive: true, createdAt: new Date().toISOString() },
+                ];
+                localStorage.setItem('periods', JSON.stringify(defaultPeriods));
+            }
+
+            loadPeriodsFromLocal();
+            renderDaySelectionButtons();
+            renderTimetable();
+            showSection('timetableSection');
+        };
+    </script>
+</body>
+</html>
